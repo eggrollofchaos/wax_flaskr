@@ -13,11 +13,11 @@ def client():
     app.config["DATABASE"] = base_dir.joinpath(TEST_DB)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{base_dir.joinpath(TEST_DB)}"
 
-    # init_db()  # setup
-    db.create_all()  # setup
-    yield app.test_client()  # tests run here
-    # init_db()  # teardown
-    db.drop_all()  # teardown
+    # init_db()                 # setup
+    db.create_all()             # setup
+    yield app.test_client()     # tests run here
+    # init_db()                 # teardown
+    db.drop_all()               # teardown
 
 
 def login(client, username, password):
