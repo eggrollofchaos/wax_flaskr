@@ -1,5 +1,7 @@
-import sqlite3
+# import sqlite3
 from pathlib import Path
+from functools import wraps
+import os
 
 from flask import Flask, g, render_template, request, session, \
     flash, redirect, url_for, abort, jsonify
@@ -12,7 +14,10 @@ DATABASE = "flaskr.db"
 USERNAME = "admin"
 PASSWORD = "admin"
 SECRET_KEY = "change_me"
-SQLALCHEMY_DATABASE_URI = f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
+# SQLALCHEMY_DATABASE_URI = f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
+SQLALCHEMY_DATABASE_URI = os.getenv(
+    'DATABASE_URL', f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
+)
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # create and initialize a new Flask app
@@ -53,6 +58,16 @@ from project import models
 # def close_db(error):
 #     if hasattr(g,  "sqlite_db"):
 #         g.sqlite_db.close()
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            flash('Please log in.')
+            return jsonify({'status': 0, 'message': 'Please log in.'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -96,15 +111,17 @@ def add_entry():
     return redirect(url_for('index'))
 
 
-@app.route('/delete/<post_id>', methods=['GET'])
+@app.route('/delete/<int:post_id>', methods=['GET'])
+@login_required
 def delete_entry(post_id):
     """Delete post from database"""
-    result = {'status': 0, 'message': 'Error'}
+    # result = {'status': 0, 'message': 'Error'}
     try:
         # db = get_db()
         # db.execute('delete from entries where id=' + post_id)
         # db.commit()
-        db.session.query(models.Post).filter_by(id=post_id).delete()
+        new_id = post_id
+        db.session.query(models.Post).filter_by(id=new_id).delete()
         db.session.commit()
         result = {'status': 1, 'message': "Post Deleted"}
         flash('The entry was deleted.')
@@ -120,6 +137,7 @@ def search():
     if query:
         return render_template('search.html', entries=entries, query=query)
     return render_template('search.html')
+
 
 @app.route('/')
 # def hello():
