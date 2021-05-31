@@ -2,6 +2,7 @@
 from pathlib import Path
 from functools import wraps
 import os
+import re
 
 from flask import Flask, g, render_template, request, session, \
     flash, redirect, url_for, abort, jsonify
@@ -14,10 +15,22 @@ DATABASE = "flaskr.db"
 USERNAME = "admin"
 PASSWORD = "admin"
 SECRET_KEY = "change_me"
+
+uri = os.getenv("DATABASE_URL")  # or other relevant config var
+print(uri)
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+print(uri)
+SQLALCHEMY_DATABASE_URI = uri
+
+# SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL?sslmode=require').replace('postgres://', 'postgresql://')
 # SQLALCHEMY_DATABASE_URI = f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
-SQLALCHEMY_DATABASE_URI = os.getenv(
-    'DATABASE_URL', f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
-)
+# SQLALCHEMY_DATABASE_URI = os.getenv(
+#     'DATABASE_URL', f'sqlite:///{Path(basedir).joinpath(DATABASE)}'
+# )
+
+
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # create and initialize a new Flask app
