@@ -7,6 +7,7 @@ import json
 
 from project.app import app, init_db
 
+
 TEST_DB = "test.db"
 
 
